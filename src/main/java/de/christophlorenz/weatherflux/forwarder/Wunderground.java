@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import org.apache.http.HttpResponse;
@@ -47,7 +48,9 @@ public class Wunderground implements Forwarder {
   @Override
   public void forward(Map<String, String> data) {
     if (!isReadyToSend()) {
-      LOGGER.debug("Skipping request");
+      long deltaInSeconds = (System.currentTimeMillis() - lastRunMillis) / 1000;
+      long remainingSeconds = config.getPeriod() - deltaInSeconds;
+      LOGGER.debug("Skipping request at least " + remainingSeconds + " seconds until " + new Date(System.currentTimeMillis() + (1000 * remainingSeconds)));
       return;
     }
 
@@ -92,6 +95,7 @@ public class Wunderground implements Forwarder {
                   + responseBody + "'");
           return;
         }
+        LOGGER.debug("Successfully forwarded data to WeatherUnderground");
       } catch (Exception e) {
         LOGGER.warn("Cannot forward data to " + config.getUrl() + ": " + e, e);
       }

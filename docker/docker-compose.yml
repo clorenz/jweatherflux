@@ -33,6 +33,8 @@ services:
     image: weatherflux
     ports:
       - 6666:6666
+    dns:
+      - 8.8.8.8
 volumes:
   influxdb-storage:
   chronograf-storage:
