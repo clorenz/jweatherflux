@@ -14,6 +14,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.StringEntity;
@@ -47,30 +48,26 @@ public class TestingForwarder implements Forwarder {
 
   @Override
   public void forward(Map<String, String> data) {
-    CloseableHttpClient client = HttpClients.createDefault();
-    try {
+    try (CloseableHttpClient client = HttpClients.createDefault();) {
       HttpPost post = new HttpPost(config.getUrl());
       List<NameValuePair> postData = new ArrayList<NameValuePair>();
       data.forEach((key, value) -> postData.add(new BasicNameValuePair(key, URLDecoder.decode(value, StandardCharsets.UTF_8))));
       post.setEntity(new UrlEncodedFormEntity(postData));
-      HttpResponse response = client.execute(post);
-      if (response.getStatusLine().getStatusCode() <= 199
-          || response.getStatusLine().getStatusCode() >= 400) {
-        LOGGER.warn(
-            "Could not successfully forward data to " + config.getUrl() + " because of status="
-                + response.getStatusLine());
+      try(CloseableHttpResponse response = client.execute(post)) {
+        if (response.getStatusLine().getStatusCode() <= 199
+            || response.getStatusLine().getStatusCode() >= 400) {
+          LOGGER.warn(
+              "Could not successfully forward data to " + config.getUrl() + " because of status="
+                  + response.getStatusLine());
+        }
+      } catch (Exception e) {
+        LOGGER.warn("Cannot forward data to " + config.getUrl() + ": " + e, e);
       }
     } catch (HttpHostConnectException e) {
       // Ignore. because normally, there's no one to receive the forwarded data
       // LOGGER.warn("Cannot forward data to " + config.getUrl() + ": " + e);
     } catch (Exception e) {
       LOGGER.warn("Cannot forward data to " + config.getUrl() + ": " + e, e);
-    } finally {
-      try {
-        client.close();
-      } catch (IOException e) {
-        LOGGER.warn("Cannot close client to " + config.getUrl() + ": " + e, e);
-      }
     }
   }
 }

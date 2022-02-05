@@ -38,6 +38,10 @@ public class InfluxRepository {
   }
 
   public void persist(WeatherData weatherData) throws InfluxRepositoryException {
+    if (influxProperties.getUrl()==null) {
+      LOGGER.warn("No persistence enpdoint defined to persist " + weatherData);
+      return;
+    }
 
     try {
       InfluxDBClient influxDBClient = InfluxDBClientFactory.create(
