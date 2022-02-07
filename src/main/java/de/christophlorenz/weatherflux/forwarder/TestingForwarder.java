@@ -13,6 +13,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -36,6 +37,7 @@ public class TestingForwarder implements Forwarder {
   public TestingForwarder(ForwarderProperties forwarderProperties) {
     if (forwarderProperties.getTestingForwarder() != null) {
       config = forwarderProperties.getTestingForwarder();
+      LOGGER.info("Configuration for testingForwarder=" + config);
     } else {
       config = null;
     }
@@ -60,6 +62,9 @@ public class TestingForwarder implements Forwarder {
               "Could not successfully forward data to " + config.getUrl() + " because of status="
                   + response.getStatusLine());
         }
+      } catch (HttpHostConnectException | NoHttpResponseException ignore) {
+        // ignore, since we normally don't have an active receiver for forwards
+        return;
       } catch (Exception e) {
         LOGGER.warn("Cannot forward data to " + config.getUrl() + ": " + e, e);
       }

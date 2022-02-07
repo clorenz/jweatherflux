@@ -136,6 +136,7 @@ public class WeatherData {
     this.winddirs = winddirs;
   }
 
+
   public void setUv(Float uv) {
     this.uv = uv;
   }

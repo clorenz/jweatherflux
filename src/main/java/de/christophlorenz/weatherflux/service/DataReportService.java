@@ -49,6 +49,10 @@ public class DataReportService {
       Map<String, Float> winddirs = extractWinddirs(data);
       Float uv = Float.parseFloat(data.get("uv"));
 
+      // Calculated values
+      Float windchill = calcWindchill(tempsCelsius.get("default"), windspeedsKmh.get("current"), humidities.get("default"));
+      tempsCelsius.put("windchill", windchill);
+
       WeatherData weatherData = new WeatherDataBuilder()
           .atUtc(fixTimestamp(data.get(DATEUTC)))
           .withHumidities(humidities)
@@ -137,6 +141,26 @@ public class DataReportService {
 
   private Float imperialToMetric(Float imperial) {
     return imperial * 0.0254f;
+  }
+
+  /**
+   * According to https://myscope.net/windchill-gefuehlte-temperatur-berechnen/
+   * @param tempInCelsius
+   * @param windKmh
+   * @param humidity
+   * @return
+   */
+  private Float calcWindchill(Float tempInCelsius, Float windKmh, Float humidity) {
+    if (tempInCelsius <= 10 && windKmh >= 4.8 && windKmh <= 177){
+      return (float) (13.12 + 0.6215 * tempInCelsius - 11.37 * Math.pow(windKmh, 0.16)
+          + 0.3965 * tempInCelsius * Math.pow(windKmh, 0.16));
+    }
+
+    if (tempInCelsius >= 26.7 ) {
+      return (float)(-8.784695 + 1.61139411*tempInCelsius + 2.338549*humidity - 0.14611605*tempInCelsius*humidity - 0.012308094*tempInCelsius*tempInCelsius - 0.016424828*humidity*humidity + 0.002211732*tempInCelsius*tempInCelsius*humidity + 0.00072546*tempInCelsius*humidity*humidity - 0.000003582*tempInCelsius*tempInCelsius*humidity*humidity);
+    }
+
+    return tempInCelsius;
   }
 
   private String fixKey(String key) {

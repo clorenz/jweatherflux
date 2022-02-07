@@ -1,19 +1,29 @@
 app:
   forwarders:
-    #testingForwarder:
-    #  url: http://192.168.1.100:6666/data/report
-    #wunderground:
-    #  url: https://weatherstation.wunderground.com/weatherstation/updateweatherstation.php
-    #  id: 'IABCDEFG'
-    #  key: '1234567'
-    #  period: 300
+    testingForwarder:
+      url: http://192.168.1.100:6666/data/report
+    wunderground:
+      url: https://weatherstation.wunderground.com/weatherstation/updateweatherstation.php
+      id: "*****"
+      key: "*****"
+      period: 300
 
 server:
   port: 6666
 
 spring:
   influx:
-    #url: http://192.168.1.1:8086
+    url: http://192.168.1.1:8086
     token: "xjsX2Zqu2WmCJ3bgTjjJ7Gd8xWaqD6ic03zsHPRV7Ve5qR356T3dFRMVkDaYlBXotoUxuWawZvQQjkIvaPHGFQ=="
     org: private
     bucket: weather
+
+---
+spring:
+  config:
+    activate:
+      on-profile: development
+  influx:
+    url:
+app:
+  forwarders: []

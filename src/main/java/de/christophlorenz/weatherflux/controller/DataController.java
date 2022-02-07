@@ -28,10 +28,13 @@ public class DataController {
   public DataController(DataReportService dataReportService, List<Forwarder> forwarders) {
     this.dataReportService = dataReportService;
     this.forwarders = forwarders;
+
+    LOGGER.info("Active Forwarders " + forwarders.stream().filter(Forwarder::isActive).map(f -> f.getClass().getSimpleName()).collect(Collectors.toList()));
   }
 
   @PostMapping("/data/report")
   public ResponseEntity report(@RequestBody String requestBody) {
+    LOGGER.debug("requestBody=" + requestBody);
     Map<String,String> data = Arrays.stream(requestBody.split("&")).map(d -> d.split("=")).collect(
         Collectors.toMap(e -> e[0], e -> e[1]));
 
