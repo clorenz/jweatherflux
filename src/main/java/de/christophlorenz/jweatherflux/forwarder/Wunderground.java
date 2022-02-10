@@ -1,31 +1,28 @@
-package de.christophlorenz.weatherflux.forwarder;
+package de.christophlorenz.jweatherflux.forwarder;
 
-import de.christophlorenz.weatherflux.config.ForwarderProperties;
-import java.io.IOException;
+import de.christophlorenz.jweatherflux.config.ForwarderProperties;
+import de.christophlorenz.jweatherflux.data.Calculators;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.HttpHostConnectException;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class Wunderground implements Forwarder {
+
+  @Value("${app.name:}") String appName;
+  @Value("${app.version:}") String appVersion;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Wunderground.class);
 
@@ -67,6 +64,9 @@ public class Wunderground implements Forwarder {
       addData(builder, data, "windgustmph");
       addData(builder, data, "humidity");
       addData(builder, data, "tempf");
+      addData(builder, data, "dewptf", Calculators.celsiusToFarenheit(Calculators.calcDewpoint(
+              Calculators.farenheitToCelsius(Float.parseFloat(data.get("tempf"))),
+              Float.parseFloat(data.get("humidity")))));
       addData(builder, data, "rainin", "hourlyrainin");
       addData(builder, data, "dailyrainin");
       addData(builder, data, "baromin", "baromrelin");
@@ -109,6 +109,10 @@ public class Wunderground implements Forwarder {
     }
 
     lastRunMillis = System.currentTimeMillis();
+  }
+
+  private void addData(URIBuilder builder, Map<String, String> data, String wundergroundKey, Float value) {
+    builder.setParameter(wundergroundKey, "" + value);
   }
 
   private void addData(URIBuilder builder, Map<String, String> data, String unmappedKey) throws InvalidDataException {

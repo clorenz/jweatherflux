@@ -1,8 +1,9 @@
-package de.christophlorenz.weatherflux.service;
+package de.christophlorenz.jweatherflux.service;
 
-import de.christophlorenz.weatherflux.model.WeatherData;
-import de.christophlorenz.weatherflux.model.WeatherDataBuilder;
-import de.christophlorenz.weatherflux.repository.InfluxRepository;
+import de.christophlorenz.jweatherflux.data.Calculators;
+import de.christophlorenz.jweatherflux.model.WeatherData;
+import de.christophlorenz.jweatherflux.model.WeatherDataBuilder;
+import de.christophlorenz.jweatherflux.repository.InfluxRepository;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -50,8 +51,11 @@ public class DataReportService {
       Float uv = Float.parseFloat(data.get("uv"));
 
       // Calculated values
-      Float windchill = calcWindchill(tempsCelsius.get("default"), windspeedsKmh.get("current"), humidities.get("default"));
+      Float windchill = Calculators.calcWindchill(tempsCelsius.get("default"), windspeedsKmh.get("current"), humidities.get("default"));
       tempsCelsius.put("windchill", windchill);
+      Float dewpoint = Calculators.calcDewpoint(tempsCelsius.get("default"), humidities.get("default"));
+      tempsCelsius.put("dewpoint", dewpoint);
+      tempsFarenheit.put("dewpoint", Calculators.celsiusToFarenheit(dewpoint));
 
       WeatherData weatherData = new WeatherDataBuilder()
           .atUtc(fixTimestamp(data.get(DATEUTC)))
@@ -83,7 +87,7 @@ public class DataReportService {
   }
 
   private Map<String, Float> mapMphToKmh(Map<String, Float> windspeedsMph) {
-    return windspeedsMph.entrySet().stream().collect(Collectors.toMap(d -> d.getKey(), d -> mphToKmh(d.getValue())));
+    return windspeedsMph.entrySet().stream().collect(Collectors.toMap(d -> d.getKey(), d -> Calculators.mphToKmh(d.getValue())));
   }
 
   private Map<String, Float> extractWinddirs(Map<String, String> data) {
@@ -101,7 +105,7 @@ public class DataReportService {
   }
 
   private Map<String, Float> mapToHectopascal(Map<String, Float> baromImperial) {
-    return baromImperial.entrySet().stream().collect(Collectors.toMap(d -> d.getKey(), d -> inHgToHpa(d.getValue())));
+    return baromImperial.entrySet().stream().collect(Collectors.toMap(d -> d.getKey(), d -> Calculators.inHgToHpa(d.getValue())));
   }
 
   private Map<String, Float> extractBarometerImperial(Map<String, String> data, String prefix) {
@@ -110,7 +114,7 @@ public class DataReportService {
   }
 
   private Map<String, Float> mapToCelsius(Map<String, Float> tempsFarenheit) {
-    return tempsFarenheit.entrySet().stream().collect(Collectors.toMap(d -> d.getKey(), d -> farenheitToCelsius(d.getValue())));
+    return tempsFarenheit.entrySet().stream().collect(Collectors.toMap(d -> d.getKey(), d -> Calculators.farenheitToCelsius(d.getValue())));
   }
 
   private Map<String, Float> extractTemperaturesFarenheit(Map<String, String> data) {
@@ -124,44 +128,9 @@ public class DataReportService {
   }
 
   private Map<String, Float> mapToMetric(Map<String, Float> rainImperial) {
-    return rainImperial.entrySet().stream().collect(Collectors.toMap(d -> d.getKey(), d -> imperialToMetric(d.getValue())));
+    return rainImperial.entrySet().stream().collect(Collectors.toMap(d -> d.getKey(), d -> Calculators.imperialToMetric(d.getValue())));
   }
 
-  private Float farenheitToCelsius(Float farenheit) {
-    return (farenheit - 32f) * (5f / 9f);
-  }
-
-  private Float inHgToHpa(Float inHg) {
-    return inHg * 33.863f;
-  }
-
-  private Float mphToKmh(Float mph) {
-    return mph * 1.60934f;
-  }
-
-  private Float imperialToMetric(Float imperial) {
-    return imperial * 0.0254f;
-  }
-
-  /**
-   * According to https://myscope.net/windchill-gefuehlte-temperatur-berechnen/
-   * @param tempInCelsius
-   * @param windKmh
-   * @param humidity
-   * @return
-   */
-  private Float calcWindchill(Float tempInCelsius, Float windKmh, Float humidity) {
-    if (tempInCelsius <= 10 && windKmh >= 4.8 && windKmh <= 177){
-      return (float) (13.12 + 0.6215 * tempInCelsius - 11.37 * Math.pow(windKmh, 0.16)
-          + 0.3965 * tempInCelsius * Math.pow(windKmh, 0.16));
-    }
-
-    if (tempInCelsius >= 26.7 ) {
-      return (float)(-8.784695 + 1.61139411*tempInCelsius + 2.338549*humidity - 0.14611605*tempInCelsius*humidity - 0.012308094*tempInCelsius*tempInCelsius - 0.016424828*humidity*humidity + 0.002211732*tempInCelsius*tempInCelsius*humidity + 0.00072546*tempInCelsius*humidity*humidity - 0.000003582*tempInCelsius*tempInCelsius*humidity*humidity);
-    }
-
-    return tempInCelsius;
-  }
 
   private String fixKey(String key) {
     return (key==null || key.isBlank()) ? "default" : key;

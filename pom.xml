@@ -9,8 +9,8 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>de.christophlorenz</groupId>
-	<artifactId>weatherflux</artifactId>
-	<version>0.0.3-SNAPSHOT</version>
+	<artifactId>jweatherflux</artifactId>
+	<version>0.0.4-SNAPSHOT</version>
 	<name>weatherflux</name>
 	<description>Fills InfluxDB with weather data from a Froggit WS3000 Pro</description>
 	<properties>
@@ -67,6 +67,15 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/application*.yml</include>
+				</includes>
+			</resource>
+		</resources>
 	</build>
 
 	<repositories>

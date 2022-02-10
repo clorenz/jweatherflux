@@ -1,12 +1,14 @@
-# WeatherFlux
+# JWeatherFlux
+
+![Screenshot](Grafana.jpg)
 
 A docker setup for monitoring weather data from a Froggit HP1000SE PRO Ultrasonic.
 
 It acts as "custom" server, ingests data into an Influx database and visualizes
 it with Grafana.
 
-Additionally, it is indented to forward the data to other weather networks. This feature
-will be implemented into the Java service.
+Additionally, you can forward the data to other weather networks. Currently
+there's a forwarder for WeatherUnderground.
 
 Use it at your own risk! No warranty at all is provided!
 
@@ -17,7 +19,7 @@ Setup influxdb and grafana initially (will cause an error in grafana)
     cd docker
     docker-compose up
 
-(If the docker setup cannot start, because the `weatherflux` container is still missing,
+(If the docker setup cannot start, because the `jweatherflux` container is still missing,
 just comment it out in `docker-compose.yml`)
 
 Since Grafana cannot work out of the box with Influx2 buckets, which don't belong
@@ -46,20 +48,20 @@ InfluxDB v1
 
 ## Build the java image
 
-Create the docker container `weatherflux` with the follwing command:
+Create the docker container `jweatherflux` with the follwing command:
 
-    mvn -s .mvn/settings.xml spring-boot:build-image -Dspring-boot.build-image.imageName=weatherflux
+    mvn -s .mvn/settings.xml spring-boot:build-image -Dspring-boot.build-image.imageName=jweatherflux
 
 ## Deploy
 
-    docker save -o /tmp/weatherflux.tar weatherflux
-    scp /tmp/weatherflux.tar you@targethost:/tmp
+    docker save -o /tmp/jweatherflux.tar jweatherflux
+    ssyou@targethost:/tmp
     ssh you@targethost
-    cd ~/weatherflux/docker
+    cd ~/jweatherflux/docker
     docker-compose stop
-    docker load -i /tmp/weatherflux.tar
+    docker load -i /tmp/jweatherflux.tar
     docker-compose up -d
 
 If you want, you can read the logs with
 
-    docker logs -f docker_weatherflux_1
+    docker logs -f docker_jweatherflux_1

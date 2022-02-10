@@ -1,4 +1,4 @@
-package de.christophlorenz.weatherflux.service;
+package de.christophlorenz.jweatherflux.service;
 
 public class PersistException extends Exception {
 

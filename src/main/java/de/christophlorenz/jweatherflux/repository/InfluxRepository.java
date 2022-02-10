@@ -1,15 +1,11 @@
-package de.christophlorenz.weatherflux.repository;
+package de.christophlorenz.jweatherflux.repository;
 
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
-import com.influxdb.client.InfluxDBClientOptions;
 import com.influxdb.client.WriteApiBlocking;
-import com.influxdb.client.domain.WritePrecision;
-import com.influxdb.client.write.Point;
 import com.influxdb.exceptions.InfluxException;
-import de.christophlorenz.weatherflux.config.InfluxProperties;
-import de.christophlorenz.weatherflux.model.WeatherData;
-import java.util.List;
+import de.christophlorenz.jweatherflux.config.InfluxProperties;
+import de.christophlorenz.jweatherflux.model.WeatherData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;

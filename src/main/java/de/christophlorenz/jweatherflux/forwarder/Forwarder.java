@@ -1,4 +1,4 @@
-package de.christophlorenz.weatherflux.forwarder;
+package de.christophlorenz.jweatherflux.forwarder;
 
 import java.util.Map;
 

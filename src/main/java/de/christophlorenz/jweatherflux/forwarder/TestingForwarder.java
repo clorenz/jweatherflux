@@ -1,31 +1,23 @@
-package de.christophlorenz.weatherflux.forwarder;
+package de.christophlorenz.jweatherflux.forwarder;
 
-import de.christophlorenz.weatherflux.config.ForwarderProperties;
-import de.christophlorenz.weatherflux.config.InfluxProperties;
-import java.io.IOException;
+import de.christophlorenz.jweatherflux.config.ForwarderProperties;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.HttpHostConnectException;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import retrofit2.http.HTTP;
 
 @Service
 public class TestingForwarder implements Forwarder {

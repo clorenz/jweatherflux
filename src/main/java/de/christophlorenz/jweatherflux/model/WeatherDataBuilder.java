@@ -1,11 +1,6 @@
-package de.christophlorenz.weatherflux.model;
+package de.christophlorenz.jweatherflux.model;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 public class WeatherDataBuilder {

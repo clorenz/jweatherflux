@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ## [Unreleased]
 
+## [0.0.4-SNAPSHOT]() - 2022-02-10
+
+### Added
+
+- Added dewpoint calculation
+
+### Changed
+
+- Renamed application to JWeatherFlux
+
 ## [0.0.3-SNAPSHOT]() - 2022-02-07
 
 ### Added

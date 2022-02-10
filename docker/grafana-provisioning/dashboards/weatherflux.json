@@ -21,7 +21,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "iteration": 1643986612557,
+  "id": 2,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -68,8 +68,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -181,6 +180,7 @@
           "color": {
             "mode": "continuous-BlYlRd"
           },
+          "decimals": 1,
           "mappings": [],
           "max": 40,
           "min": -20,
@@ -188,8 +188,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "blue",
@@ -347,8 +346,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -518,7 +516,7 @@
           "tags": []
         }
       ],
-      "title": "Wind",
+      "title": "Wind (6h)",
       "transformations": [
         {
           "id": "filterByValue",
@@ -596,8 +594,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -803,8 +800,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -919,8 +915,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1037,8 +1032,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1155,8 +1149,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1273,33 +1266,12 @@
       "type": "row"
     }
   ],
+  "refresh": "1m",
   "schemaVersion": 35,
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": [
-      {
-        "current": {},
-        "datasource": {
-          "uid": "${DS_INFLUXDB}"
-        },
-        "definition": "",
-        "error": {
-          "message": "Datasource ${DS_INFLUXDB} was not found"
-        },
-        "hide": 0,
-        "includeAll": false,
-        "multi": false,
-        "name": "query0",
-        "options": [],
-        "query": "",
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "type": "query"
-      }
-    ]
+    "list": []
   },
   "time": {
     "from": "now-24h",
@@ -1309,6 +1281,6 @@
   "timezone": "",
   "title": "WeatherFlux",
   "uid": "nx_uSWa7k",
-  "version": 16,
+  "version": 17,
   "weekStart": ""
 }
