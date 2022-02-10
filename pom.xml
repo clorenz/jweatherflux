@@ -72,7 +72,7 @@
 				<directory>${basedir}/src/main/resources</directory>
 				<filtering>true</filtering>
 				<includes>
-					<include>**/application*.yml</include>
+					<include>**/application*.yaml</include>
 				</includes>
 			</resource>
 		</resources>
