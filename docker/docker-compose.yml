@@ -29,8 +29,8 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USERNAME}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
-  weatherflux:
-    image: weatherflux
+  jweatherflux:
+    image: jweatherflux
     ports:
       - 6666:6666
     dns:
