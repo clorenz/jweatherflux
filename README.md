@@ -55,7 +55,7 @@ Create the docker container `jweatherflux` with the follwing command:
 ## Deploy
 
     docker save -o /tmp/jweatherflux.tar jweatherflux
-    ssyou@targethost:/tmp
+    scp /tmp/jweatherflux.tar you@targethost:/tmp
     ssh you@targethost
     cd ~/jweatherflux/docker
     docker-compose stop

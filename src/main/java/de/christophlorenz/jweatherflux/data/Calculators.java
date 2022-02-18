@@ -18,6 +18,10 @@ public class Calculators {
     return mph * 1.60934f;
   }
 
+  public static Float mphToMs(Float mph) {
+    return mph / 2.237f;
+  }
+
   public static Float imperialToMetric(Float imperial) {
     return imperial * 0.0254f;
   }

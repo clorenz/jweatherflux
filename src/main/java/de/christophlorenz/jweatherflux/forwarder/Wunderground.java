@@ -39,7 +39,7 @@ public class Wunderground implements Forwarder {
 
   @Override
   public boolean isActive() {
-    return config != null;
+    return config != null && !config.getUrl().isBlank();
   }
 
   @Override
@@ -73,6 +73,8 @@ public class Wunderground implements Forwarder {
       addData(builder, data, "solarradiation");
       addData(builder, data, "UV", "uv");
       addData(builder, data, "softwaretype", "stationtype");
+
+      //TODO Refactor this into transmit by getRequest
 
       HttpGet get = new HttpGet(builder.build());
       try(CloseableHttpResponse response = client.execute(get)) {

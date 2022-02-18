@@ -29,7 +29,6 @@ public class TestingForwarder implements Forwarder {
   public TestingForwarder(ForwarderProperties forwarderProperties) {
     if (forwarderProperties.getTestingForwarder() != null) {
       config = forwarderProperties.getTestingForwarder();
-      LOGGER.info("Configuration for testingForwarder=" + config);
     } else {
       config = null;
     }
@@ -37,7 +36,7 @@ public class TestingForwarder implements Forwarder {
 
   @Override
   public boolean isActive() {
-    return (config != null);
+    return config != null && !config.getUrl().isBlank();
   }
 
   @Override
