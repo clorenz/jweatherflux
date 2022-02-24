@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>de.christophlorenz</groupId>
 	<artifactId>jweatherflux</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.9.0-SNAPSHOT</version>
 	<name>weatherflux</name>
 	<description>Fills InfluxDB with weather data from a Froggit WS3000 Pro</description>
 	<properties>
@@ -23,12 +23,21 @@
 			<version>4.1.0</version>
 		</dependency>
 		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-autoconfigure</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -2,10 +2,14 @@ package de.christophlorenz.jweatherflux.forwarder;
 
 import de.christophlorenz.jweatherflux.config.ForwarderProperties;
 import de.christophlorenz.jweatherflux.data.Calculators;
+import io.micrometer.core.instrument.MeterRegistry;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -13,28 +17,32 @@ import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class Wunderground implements Forwarder {
+public class Wunderground extends AbstractForwarder {
 
-  @Value("${app.name:}") String appName;
-  @Value("${app.version:}") String appVersion;
-
+  private final String appName;
+  private final String appVersion;
   private static final Logger LOGGER = LoggerFactory.getLogger(Wunderground.class);
-
+  private final HttpForwarderService httpForwarderService;
   private final ForwarderProperties.Wunderground config;
-  private long lastRunMillis = 0;
 
-  public Wunderground(ForwarderProperties forwarderProperties) {
+
+  public Wunderground(ForwarderProperties forwarderProperties, HttpForwarderService httpForwarderService, @Value("${app.name:}") String appName, @Value("${app.version:}") String appVersion, MeterRegistry meterRegistry) {
+    super(forwarderProperties.getWetterCom() != null ? forwarderProperties.getWetterCom().getInterval() : 0, meterRegistry);
     if (forwarderProperties.getWunderground() != null) {
       config = forwarderProperties.getWunderground();
     } else {
       config = null;
     }
+    this.httpForwarderService = httpForwarderService;
+    this.appName = appName;
+    this.appVersion = appVersion;
   }
 
   @Override
@@ -43,16 +51,14 @@ public class Wunderground implements Forwarder {
   }
 
   @Override
-  public void forward(Map<String, String> data) {
-    if (!isReadyToSend()) {
-      long deltaInSeconds = (System.currentTimeMillis() - lastRunMillis) / 1000;
-      long remainingSeconds = config.getPeriod() - deltaInSeconds;
-      LOGGER.debug("Skipping request at least " + remainingSeconds + " seconds until " + new Date(System.currentTimeMillis() + (1000 * remainingSeconds)));
-      return;
-    }
+  public long getTimeoutInSeconds() {
+    return config != null ? config.getTimeout() : 1;
+  }
 
-
-    try (CloseableHttpClient client = HttpClients.createDefault();) {
+  @Override
+  public void forwardToService(Map<String, String> data) throws AuthorizationException, TransmitException, InvalidDataException {
+    URI uri;
+    try {
       URIBuilder builder = new URIBuilder(config.getUrl());
       builder.setParameter("ID", config.getId());
       builder.setParameter("PASSWORD", config.getKey());
@@ -73,44 +79,12 @@ public class Wunderground implements Forwarder {
       addData(builder, data, "solarradiation");
       addData(builder, data, "UV", "uv");
       addData(builder, data, "softwaretype", "stationtype");
-
-      //TODO Refactor this into transmit by getRequest
-
-      HttpGet get = new HttpGet(builder.build());
-      try(CloseableHttpResponse response = client.execute(get)) {
-        if (response.getStatusLine().getStatusCode() ==401 ) {
-          LOGGER.warn("Could not successfully forward data to "+ config + " because of status Unauthorized");
-          return;
-        }
-
-        if (response.getStatusLine().getStatusCode() <= 199
-            || response.getStatusLine().getStatusCode() >= 400) {
-          LOGGER.warn(
-              "Could not successfully forward data to " + config.getUrl() + " because of status="
-                  + response.getStatusLine());
-          return;
-        }
-        String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8).replaceAll("\\n", "");
-        if (! ("success".equalsIgnoreCase(responseBody))) {
-          LOGGER.error(
-              "Could not successfully forward data to " + get + " because of response='"
-                  + responseBody + "'");
-          return;
-        }
-        LOGGER.debug("Successfully forwarded data to WeatherUnderground");
-      } catch (Exception e) {
-        LOGGER.warn("Cannot forward data to " + config.getUrl() + ": " + e, e);
-      }
-
-    } catch (InvalidDataException e) {
-      LOGGER.error("Cannot forward data to " + config.getUrl() + " because of " + e);
-    } catch (HttpHostConnectException e) {
-      LOGGER.warn("Cannot forward data to " + config.getUrl() + ": " + e);
+      uri = builder.build();
     } catch (Exception e) {
-      LOGGER.warn("Cannot forward data to " + config.getUrl() + ": " + e, e);
+      throw new InvalidDataException("Cannot build URI: " + e, e);
     }
 
-    lastRunMillis = System.currentTimeMillis();
+    httpForwarderService.transmitByGetRequest(uri, evaluateSuccessFromBody());
   }
 
   private void addData(URIBuilder builder, Map<String, String> data, String wundergroundKey, Float value) {
@@ -128,8 +102,18 @@ public class Wunderground implements Forwarder {
     builder.setParameter(wundergroundKey, data.get(key));
   }
 
-  private boolean isReadyToSend() {
-    long deltaInSeconds = (System.currentTimeMillis() - lastRunMillis) / 1000;
-    return (deltaInSeconds >= config.getPeriod());
+  @NotNull
+  protected Function<String, Boolean> evaluateSuccessFromBody() {
+    return (body) -> body.toLowerCase(Locale.ROOT).matches("success");
+  }
+
+  @Override
+  Logger getLogger() {
+    return LOGGER;
+  }
+
+  @Override
+  public String getForwarderName() {
+    return "WeatherUnderground";
   }
 }

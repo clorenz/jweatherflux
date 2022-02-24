@@ -27,6 +27,16 @@ public class Calculators {
   }
 
   /**
+   * Maps watt / m^2 to Lux
+   * According to https://www.landwirtschaftskammer.de/gartenbau/beratung/technik/artikel/lichtwerte-umrechnen.htm
+   * @param wattsPerSquareMeter
+   * @return Lux
+   */
+  public static Float wattsPerSquareMeterToLux(Float wattsPerSquareMeter) {
+    return 130 * wattsPerSquareMeter;
+  }
+
+  /**
    * According to https://myscope.net/windchill-gefuehlte-temperatur-berechnen/
    * @param tempInCelsius
    * @param windKmh

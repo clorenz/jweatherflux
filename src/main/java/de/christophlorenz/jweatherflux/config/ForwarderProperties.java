@@ -11,6 +11,7 @@ public class ForwarderProperties {
   private TestingForwarder testingForwarder;
   private Wunderground wunderground;
   private WetterCom wetterCom;
+  private Awekas awekas;
 
   public void setTestingForwarder(TestingForwarder testingForwarder) {
     this.testingForwarder = testingForwarder;
@@ -37,17 +38,27 @@ public class ForwarderProperties {
     this.wetterCom = wetterCom;
   }
 
+  public Awekas getAwekas() {
+    return awekas;
+  }
+
+  public void setAwekas(Awekas awekas) {
+    this.awekas = awekas;
+  }
+
   @Override
   public String toString() {
     return "ForwarderProperties{" +
         "testingForwarder=" + testingForwarder +
         ", wunderground=" + wunderground +
         ", wetterCom=" + wetterCom +
+        ", awekas=" + awekas +
         '}';
   }
 
   public static class TestingForwarder {
     private String url;
+    private int timeout=5;
 
     public String getUrl() {
       return url;
@@ -57,10 +68,19 @@ public class ForwarderProperties {
       this.url = url;
     }
 
+    public int getTimeout() {
+      return timeout;
+    }
+
+    public void setTimeout(int timeout) {
+      this.timeout = timeout;
+    }
+
     @Override
     public String toString() {
       return "TestingForwarder{" +
           "url='" + url + '\'' +
+          ", timeout=" + timeout +
           '}';
     }
   }
@@ -73,8 +93,8 @@ public class ForwarderProperties {
     private String url;
     private String id;
     private String key;
-
     private int period;
+    private int timeout = 30;
 
     public String getUrl() {
       return url;
@@ -108,6 +128,14 @@ public class ForwarderProperties {
       this.period = period;
     }
 
+    public int getTimeout() {
+      return timeout;
+    }
+
+    public void setTimeout(int timeout) {
+      this.timeout = timeout;
+    }
+
     @Override
     public String toString() {
       return "Wunderground{" +
@@ -115,6 +143,7 @@ public class ForwarderProperties {
           ", id='" + id + '\'' +
           ", key='" + mask(key) + '\'' +
           ", period=" + period +
+          ", timeout=" + timeout +
           '}';
     }
   }
@@ -124,6 +153,7 @@ public class ForwarderProperties {
     private String userId;
     private String idKennwort;
     private int interval;
+    private int timeout = 10;     // seconds
 
     public String getUrl() {
       return url;
@@ -157,6 +187,14 @@ public class ForwarderProperties {
       this.interval = interval;
     }
 
+    public int getTimeout() {
+      return timeout;
+    }
+
+    public void setTimeout(int timeout) {
+      this.timeout = timeout;
+    }
+
     @Override
     public String toString() {
       return "WetterCom{" +
@@ -164,6 +202,66 @@ public class ForwarderProperties {
           "userId='" + userId + '\'' +
           ", idKennwort='" + mask(idKennwort) + '\'' +
           ", interval=" + interval +
+          ", timeout=" + timeout +
+          '}';
+    }
+  }
+
+  public static class Awekas {
+    private String url;
+    private String id;
+    private String key;
+    private int interval;
+    private int timeout = 10;
+
+    public String getUrl() {
+      return url;
+    }
+
+    public void setUrl(String url) {
+      this.url = url;
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    public void setId(String id) {
+      this.id = id;
+    }
+
+    public String getKey() {
+      return key;
+    }
+
+    public void setKey(String key) {
+      this.key = key;
+    }
+
+    public int getInterval() {
+      return interval;
+    }
+
+    public void setInterval(int interval) {
+      this.interval = interval;
+    }
+
+    public int getTimeout() {
+      return timeout;
+    }
+
+    public void setTimeout(int timeout) {
+      this.timeout = timeout;
+    }
+
+    @Override
+    public String toString() {
+      return "Awekas{" +
+          "url='" + url + '\'' +
+          ", id='" + id + '\'' +
+          ", key='" + key + '\'' +
+          ", interval=" + interval +
+          ", timeout=" + timeout +
           '}';
     }
   }

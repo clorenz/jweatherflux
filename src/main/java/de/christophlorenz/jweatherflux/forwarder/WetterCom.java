@@ -2,6 +2,7 @@ package de.christophlorenz.jweatherflux.forwarder;
 
 import de.christophlorenz.jweatherflux.config.ForwarderProperties;
 import de.christophlorenz.jweatherflux.data.Calculators;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -34,8 +35,7 @@ public class WetterCom extends AbstractForwarder {
   private final HttpForwarderService httpForwarderService;
   private final ForwarderProperties.WetterCom config;
 
-  public WetterCom(ForwarderProperties forwarderProperties, HttpForwarderService httpForwarderService, @Value("${app.name:}") String appName, @Value("${app.version:}") String appVersion) {
-    super(forwarderProperties.getWetterCom() != null ? forwarderProperties.getWetterCom().getInterval() : 0);
+  public WetterCom(ForwarderProperties forwarderProperties, HttpForwarderService httpForwarderService, @Value("${app.name:}") String appName, @Value("${app.version:}") String appVersion, MeterRegistry meterRegistry) {    super(forwarderProperties.getWetterCom() != null ? forwarderProperties.getWetterCom().getInterval() : 0, meterRegistry);
 
     if (forwarderProperties.getWetterCom() != null) {
       config = forwarderProperties.getWetterCom();
@@ -50,6 +50,11 @@ public class WetterCom extends AbstractForwarder {
   @Override
   public boolean isActive() {
     return config != null && !config.getUrl().isBlank();
+  }
+
+  @Override
+  public long getTimeoutInSeconds() {
+    return config != null ? config.getTimeout() : 1;
   }
 
   @Override
@@ -79,15 +84,15 @@ public class WetterCom extends AbstractForwarder {
           Calculators.inHgToHpa(Float.parseFloat(data.get(FIELD_BAROMETER_RELATIVE_INTERNAL)))));
       builder.setParameter("dp", String.format(Locale.ENGLISH, "%.1f", dewpoint));
       builder.setParameter("wd", String.format(Locale.ENGLISH, "%.0f",
-          Float.parseFloat(data.get(FIELD_WIND_DIRECTION_CURRENT))));
+          Float.parseFloat(data.get(FIELD_WIND_DIRECTION_10MIN_AVG))));
       builder.setParameter("ws", String.format(Locale.ENGLISH, "%.1f",
-          Calculators.mphToMs(Float.parseFloat(data.get(FIELD_WIND_SPEED_CURRENT_MPH)))));
+          Calculators.mphToMs(Float.parseFloat(data.get(FIELD_WIND_SPEED_10MIN_AVG)))));
       builder.setParameter("wg", String.format(Locale.ENGLISH, "%.1f",
           Calculators.mphToMs(Float.parseFloat(data.get(FIELD_WIND_GUST_CURRENT_MPH)))));
       builder.setParameter("pa", String.format(Locale.ENGLISH, "%.2f",
-          Calculators.imperialToMetric(Float.parseFloat(data.get(FIELD_RAIN_HOURLY_INCH)))));
+          1000 * Calculators.imperialToMetric(Float.parseFloat(data.get(FIELD_RAIN_HOURLY_INCH)))));
       builder.setParameter("rr", String.format(Locale.ENGLISH, "%.2f",
-          Calculators.imperialToMetric(Float.parseFloat(data.get(FIELD_RAIN_CURRENT_RATE_INCH)))));
+          1000 * Calculators.imperialToMetric(Float.parseFloat(data.get(FIELD_RAIN_CURRENT_RATE_INCH)))));
       builder.setParameter("uv",
           String.format(Locale.ENGLISH, "%.0f", Float.parseFloat(data.get(FIELD_UV))));
       builder.setParameter("sr",
@@ -112,7 +117,7 @@ public class WetterCom extends AbstractForwarder {
   }
 
   @Override
-  String getForwarderName() {
+  public String getForwarderName() {
     return "wetter.com";
   }
 }

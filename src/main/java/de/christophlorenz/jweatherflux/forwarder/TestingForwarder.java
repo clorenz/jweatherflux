@@ -1,37 +1,39 @@
 package de.christophlorenz.jweatherflux.forwarder;
 
 import de.christophlorenz.jweatherflux.config.ForwarderProperties;
+import io.micrometer.core.instrument.MeterRegistry;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.http.NameValuePair;
-import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.HttpHostConnectException;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TestingForwarder implements Forwarder {
+public class TestingForwarder extends AbstractForwarder {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestingForwarder.class);
 
   private final ForwarderProperties.TestingForwarder config;
+  private final HttpForwarderService httpForwarderService;
 
-  public TestingForwarder(ForwarderProperties forwarderProperties) {
+  public TestingForwarder(ForwarderProperties forwarderProperties, HttpForwarderService httpForwarder, MeterRegistry meterRegistry) {
+    super(0, meterRegistry);
+
     if (forwarderProperties.getTestingForwarder() != null) {
       config = forwarderProperties.getTestingForwarder();
     } else {
       config = null;
     }
+
+    this.httpForwarderService = httpForwarder;
   }
 
   @Override
@@ -40,30 +42,29 @@ public class TestingForwarder implements Forwarder {
   }
 
   @Override
-  public void forward(Map<String, String> data) {
-    try (CloseableHttpClient client = HttpClients.createDefault();) {
-      HttpPost post = new HttpPost(config.getUrl());
-      List<NameValuePair> postData = new ArrayList<NameValuePair>();
-      data.forEach((key, value) -> postData.add(new BasicNameValuePair(key, URLDecoder.decode(value, StandardCharsets.UTF_8))));
-      post.setEntity(new UrlEncodedFormEntity(postData));
-      try(CloseableHttpResponse response = client.execute(post)) {
-        if (response.getStatusLine().getStatusCode() <= 199
-            || response.getStatusLine().getStatusCode() >= 400) {
-          LOGGER.warn(
-              "Could not successfully forward data to " + config.getUrl() + " because of status="
-                  + response.getStatusLine());
-        }
-      } catch (HttpHostConnectException | NoHttpResponseException ignore) {
-        // ignore, since we normally don't have an active receiver for forwards
-        return;
-      } catch (Exception e) {
-        LOGGER.warn("Cannot forward data to " + config.getUrl() + ": " + e, e);
-      }
-    } catch (HttpHostConnectException e) {
-      // Ignore. because normally, there's no one to receive the forwarded data
-      // LOGGER.warn("Cannot forward data to " + config.getUrl() + ": " + e);
-    } catch (Exception e) {
-      LOGGER.warn("Cannot forward data to " + config.getUrl() + ": " + e, e);
+  public long getTimeoutInSeconds() {
+    return config != null ? config.getTimeout() : 1;
+  }
+
+  @Override
+  public void forwardToService(Map<String, String> data)
+      throws TransmitException, InvalidDataException, IgnoredConnectionException {
+    List<NameValuePair> postData = new ArrayList<>();
+    data.forEach((key, value) -> postData.add(new BasicNameValuePair(key, URLDecoder.decode(value, StandardCharsets.UTF_8))));
+    try {
+      httpForwarderService.transmitByPostRequest(URI.create(config.getUrl()), new UrlEncodedFormEntity(postData), true);
+    } catch (UnsupportedEncodingException e) {
+      throw new InvalidDataException("Invalid encoding of POST request data: " + e);
     }
+  }
+
+  @Override
+  Logger getLogger() {
+    return LOGGER;
+  }
+
+  @Override
+  public String getForwarderName() {
+    return "Testing";
   }
 }

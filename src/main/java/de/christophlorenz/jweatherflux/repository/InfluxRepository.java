@@ -6,6 +6,12 @@ import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.exceptions.InfluxException;
 import de.christophlorenz.jweatherflux.config.InfluxProperties;
 import de.christophlorenz.jweatherflux.model.WeatherData;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -28,9 +34,20 @@ public class InfluxRepository {
   //private static final String bucket = "weather";
 
   private final InfluxProperties influxProperties;
+  private int successfulPersistings=0;
+  private int unsuccessfulPersistings=0;
+  private Timer repositoryRequestTimer;
 
-  public InfluxRepository(InfluxProperties influxProperties) {
+  public InfluxRepository(InfluxProperties influxProperties , MeterRegistry meterRegistry) {
     this.influxProperties = influxProperties;
+    Gauge.builder("repository.success", () -> successfulPersistings)
+        .tag("repository","InfluxDB")
+        .register(meterRegistry);
+    Gauge.builder("repository.error", () -> unsuccessfulPersistings)
+        .tag("repository","InfluxDB")
+        .register(meterRegistry);
+    repositoryRequestTimer = meterRegistry.timer("repository.write_duration", List.of(
+        Tag.of("repository", "InfluxDB")));
   }
 
   public void persist(WeatherData weatherData) throws InfluxRepositoryException {
@@ -40,6 +57,7 @@ public class InfluxRepository {
     }
 
     try {
+      long start = System.currentTimeMillis();
       InfluxDBClient influxDBClient = InfluxDBClientFactory.create(
           influxProperties.getUrl(),
           influxProperties.getToken().toCharArray(),
@@ -48,8 +66,11 @@ public class InfluxRepository {
       WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
       writeApi.writePoints(weatherData.getAllAsPoints());
       influxDBClient.close();
+      successfulPersistings++;
+      repositoryRequestTimer.record((System.currentTimeMillis()-start), TimeUnit.MILLISECONDS);
       LOGGER.debug("Persisted " + weatherData);
     } catch (InfluxException e) {
+      unsuccessfulPersistings++;
       throw new InfluxRepositoryException("Cannot persist data " + weatherData + ": " + e, e);
     }
   }

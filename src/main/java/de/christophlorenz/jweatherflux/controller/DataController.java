@@ -2,6 +2,7 @@ package de.christophlorenz.jweatherflux.controller;
 
 import de.christophlorenz.jweatherflux.forwarder.Forwarder;
 import de.christophlorenz.jweatherflux.service.DataReportService;
+import de.christophlorenz.jweatherflux.service.ForwarderService;
 import de.christophlorenz.jweatherflux.service.PersistException;
 import java.util.Arrays;
 import java.util.List;
@@ -21,13 +22,13 @@ public class DataController {
   private static final Logger LOGGER = LoggerFactory.getLogger(DataController.class);
 
   private final DataReportService dataReportService;
+  private final ForwarderService forwarderService;
   private final List<Forwarder> forwarders;
 
-  public DataController(DataReportService dataReportService, List<Forwarder> forwarders) {
+  public DataController(DataReportService dataReportService, ForwarderService forwarderService, List<Forwarder> forwarders) {
     this.dataReportService = dataReportService;
     this.forwarders = forwarders;
-
-    LOGGER.info("Active Forwarders " + forwarders.stream().filter(Forwarder::isActive).map(f -> f.getClass().getSimpleName()).collect(Collectors.toList()));
+    this.forwarderService = forwarderService;
   }
 
   @PostMapping("/data/report")
@@ -42,14 +43,9 @@ public class DataController {
       LOGGER.error("Cannot persist data=" + data + ": " + e);
     }
 
-    forwarders.forEach(
-        f -> {
-          if (f.isActive()) {
-            f.forward(data);
-          }
-        }
-    );
+    forwarderService.forwardAll(data);
 
+    LOGGER.debug("Started all forwarders; returning OK to weather station");
     return new ResponseEntity(HttpStatus.NO_CONTENT);
   }
 

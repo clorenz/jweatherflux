@@ -8,7 +8,7 @@ It acts as "custom" server, ingests data into an Influx database and visualizes
 it with Grafana.
 
 Additionally, you can forward the data to other weather networks. Currently
-there's a forwarder for WeatherUnderground.
+there are forwarders for WeatherUnderground, Awekas and wetter.com.
 
 Use it at your own risk! No warranty at all is provided!
 

@@ -39,6 +39,8 @@ public interface Forwarder {
 
   boolean isActive();
 
+  String getForwarderName();
+
   /**
    * Forward the data with the following keys:
    * <ul>
@@ -78,4 +80,6 @@ public interface Forwarder {
    * @param data
    */
   void forward(Map<String, String> data);
+
+  long getTimeoutInSeconds();
 }
